@@ -6,29 +6,14 @@ const port = process.env.PORT || 8000;
 const app = express();
 
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174"
-  ],
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
   optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 app.use(express.json());
 
-
-
-
-
-
-
-
-
-
-
-
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ff1pkvw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -37,7 +22,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
@@ -45,28 +30,37 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const productCollection = client.db("onlineShopDB").collection("products");
-    app.get("/products", async(req, res) => {
-        try{
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const skip = (page - 1) * limit;
+    app.get("/products", async (req, res) => {
+      try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const searchQuery = req.query.search || "";
 
-            const result = await productCollection.countDocuments();
+        const query = searchQuery
+        ? { Name: { $regex: searchQuery, $options: "i" } }
+        : {};
+        const result = await productCollection.countDocuments(query);
+        const prodcts = await productCollection
+          .find(query)
+          .skip(skip)
+          .limit(limit)
+          .toArray();
 
-            const prodcts = await productCollection.find().skip(skip).limit(limit).toArray();
-
-            res.json({
-                prodcts,
-                totalPages: Math.ceil(result/limit),
-                currentPage: page
-            });
-        }catch(error) {
-            console.log("Error fetching products", error)
-        }
-    })
+        res.json({
+          prodcts,
+          totalPages: Math.ceil(result / limit),
+          currentPage: page,
+        });
+      } catch (error) {
+        console.log("Error fetching products", error);
+      }
+    });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -74,7 +68,6 @@ async function run() {
 }
 run().catch(console.dir);
 app.get("/", (req, res) => {
-    res.send("Hello from Online Shop Server....");
-  });
-  app.listen(port, () => console.log(`Server running on port ${port}`));
-  
+  res.send("Hello from Online Shop Server....");
+});
+app.listen(port, () => console.log(`Server running on port ${port}`));
