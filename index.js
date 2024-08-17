@@ -6,7 +6,11 @@ const port = process.env.PORT || 8000;
 const app = express();
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://online-shop-client-sigma.vercel.app",
+  ],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -30,6 +34,18 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const productCollection = client.db("onlineShopDB").collection("products");
+    const userCollection = client.db("onlineShopDB").collection("users");
+
+    // save an user in dataBase
+    app.post("/users", async (req, res) => {
+      const userData = req.body;
+      const result = await userCollection.insertOne(userData);
+      res.send(result);
+    });
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
     app.get("/products", async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 1;
@@ -38,8 +54,8 @@ async function run() {
         const searchQuery = req.query.search || "";
 
         const query = searchQuery
-        ? { Name: { $regex: searchQuery, $options: "i" } }
-        : {};
+          ? { Name: { $regex: searchQuery, $options: "i" } }
+          : {};
         const result = await productCollection.countDocuments(query);
         const prodcts = await productCollection
           .find(query)
