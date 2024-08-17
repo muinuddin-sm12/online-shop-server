@@ -4,8 +4,8 @@ This project involves building a full-stack MERN application featuring product s
 
 ## Run this project Locally
 
-- add ".env" file and inside this file add your database access credentials. Like : DB_USER=(your database access name here)
-DB_PASS=(your database access password here)
+- add ".env" file and inside this file add your database access credentials. Like : DB_USER=(your database Access Name)
+DB_PASS=(your database Access Password)
 
 ## Demo
 
