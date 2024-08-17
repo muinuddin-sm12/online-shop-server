@@ -34,18 +34,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const productCollection = client.db("onlineShopDB").collection("products");
-    const userCollection = client.db("onlineShopDB").collection("users");
 
-    // save an user in dataBase
-    app.post("/users", async (req, res) => {
-      const userData = req.body;
-      const result = await userCollection.insertOne(userData);
-      res.send(result);
-    });
-    app.get("/users", async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
-    });
     app.get("/products", async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 1;
